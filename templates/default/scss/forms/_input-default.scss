@@ -1,0 +1,9 @@
+label {
+  &.require::after,
+  &.required::after {
+    content: '*';
+    color: $danger;
+    font-weight: 500;
+    margin-left: 8px
+  }
+}
