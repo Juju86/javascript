@@ -1,53 +1,62 @@
 // SCSS
 import './../scss/app.scss'
 // JS
-import $ from 'jquery'
-
 import Notification from '../../common/js/Notification'
-
-import 'bootstrap/js/dist/alert'
-import 'bootstrap/js/dist/button'
-import 'bootstrap/js/dist/carousel'
-import 'bootstrap/js/dist/collapse'
-import 'bootstrap/js/dist/dropdown'
-import 'bootstrap/js/dist/modal'
-import 'bootstrap/js/dist/popover'
-import 'bootstrap/js/dist/scrollspy'
-import 'bootstrap/js/dist/tab'
-import 'bootstrap/js/dist/tooltip'
-import 'bootstrap/js/dist/util'
 
 // FICHIERS
 import './../../common/images/logo.svg'
 
 // VARIABLES
 window.Notification = Notification
-window.$ = $
-window.jQuery = $
 
 let options = {
   theme: 'success',
   message: 'Hello world !',
+  dom: 'mid',
   dismissible: true,
   icon: 'fas fa-2x fa-check',
   onDismissed: function (i, e) {
-    console.log(i, e)
   },
   onOpen: function (i) {
-    console.log(i)
   },
   onOpened: function (i) {
-    console.log(i)
   },
   onClose: function (i) {
-    console.log(i)
   },
   onClosed: function (i) {
-    console.log(i)
   }
 }
 
 let notif = new Notification(options)
 notif.notify()
 
-window.notif = notif
+// AMD Pattern
+/*
+window.b = {
+  chien: function () {
+    console.log('Vivre')
+  }
+};
+
+(function (root, factory) {
+  console.log('1')
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['b'], factory)
+  } else {
+    console.log(root)
+    // Browser globals
+    root.amdWeb = factory(root.b)
+    console.log('5')
+  }
+}(typeof self !== 'undefined' ? self : this, function (b) {
+  // console.log(b)
+  return {
+    b: b,
+    ultra: function () {
+      console.log('Livre')
+    }
+  }
+}))
+console.log(amdWeb)
+*/

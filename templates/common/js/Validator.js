@@ -1,3 +1,4 @@
+const _validate = Symbol('_validate')
 export default class {
   /**
    * Represents a Validation.
@@ -11,22 +12,9 @@ export default class {
       }
     })
 
-    console.log(rules)
-
     this._data = data
 
-    this._validate(rules)
-  }
-
-  /**
-   * Represents a Object.
-   * @formatData
-   * @param {}
-   */
-  formatData () {
-    return this._temp.valueOf().map(() => {
-      // Creation de data
-    })
+    this[_validate](rules)
   }
 
   /**
@@ -34,7 +22,7 @@ export default class {
    * @validate
    * @param {object} validator - validator object.
    */
-  _validate (rules) {
+  [_validate] (rules) {
     rules.map((x) => {
       if (typeof x[Object.keys(x)].value !== x[Object.keys(x)].type.toString()) {
         throw new Error(`${Object.keys(x).toString()} must be a ${x[Object.keys(x)].type.toString()}`)

@@ -1,9 +1,12 @@
 import Validator from './Validator'
+import Tools from './Tools'
 import 'promise-polyfill/src/polyfill'
 const _init = Symbol('_init')
 const _generateTemplate = Symbol('_generateTemplate')
 const _generateToken = Symbol('_generateToken')
 const _open = Symbol('_open')
+const _close = Symbol('_close')
+const _timer = Symbol('_timer')
 
 class Notification extends Validator {
   /**
@@ -23,6 +26,12 @@ class Notification extends Validator {
       },
       {
         'message': {
+          'type': 'string',
+          'value': null
+        }
+      },
+      {
+        'dom': {
           'type': 'string',
           'value': null
         }
@@ -73,10 +82,14 @@ class Notification extends Validator {
 
     super(validator, data)
 
+    console.log(Tools._formatData())
+
+    console.log(validator, data)
+
     this._container = document.createElement('div')
     this._notification = document.createElement('div')
     this._token = this[_generateToken](5)
-    this._timer = null
+    this[_timer] = null
 
     this[_init]()
   }
@@ -152,14 +165,14 @@ class Notification extends Validator {
       this[_open]()
         .then(() => {
           this._notification.addEventListener('click', (e) => {
-            this.close(e)
+            this[_close](e)
           })
         })
         .then(() => {
           let width = 1
-          this._timer = setInterval(() => {
+          this[_timer] = setInterval(() => {
             if (width >= 100) {
-              this.close()
+              this[_close]()
             } else {
               width++
               this._notification.querySelector('.progress-bar').style.width = width + '%'
@@ -193,13 +206,13 @@ class Notification extends Validator {
    * @close
    * @param {}
    */
-  close (e) {
+  [_close] (e) {
     this._data.onClose(this)
     if (typeof e === 'object') {
       this._data.onDismissed(this, e)
     }
-    clearInterval(this._timer)
-    // this._notification.remove()
+    clearInterval(this[_timer])
+    this._notification.remove()
     this._data.onClosed(this)
   }
 }
