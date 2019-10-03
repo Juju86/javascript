@@ -1,28 +1,14 @@
 {
   "presets": [
     [
-      "@babel/env",
-      {
-        "targets": {
-          "ie": "10",
-          "edge": "17",
-          "firefox": "60",
-          "chrome": "67",
-          "safari": "11.1"
-        },
-        "useBuiltIns": "usage"
+      "@babel/preset-env", {
+        "useBuiltIns": "usage",
+        "debug":true,
+        "corejs": {
+          "version": 3
+        }
       }
     ]
   ],
-  "plugins": [
-    [
-      "@babel/plugin-proposal-class-properties"
-    ],
-    [
-      "@babel/plugin-syntax-dynamic-import"
-    ],
-    [
-      "@babel/plugin-transform-strict-mode"
-    ]
-  ]
+  "plugins": ["@babel/plugin-syntax-dynamic-import"]
 }
