@@ -1,8 +1,12 @@
 module.exports = {
   plugins: [
-    require('autoprefixer')({
-      browsers: ['last 4 versions']
+    require('cssnano')({
+      preset: ['default', {
+        discardComments: {
+          removeAll: true
+        }
+      }]
     }),
-    require('postcss-discard-duplicates')()
+    require('autoprefixer')()
   ]
 }
