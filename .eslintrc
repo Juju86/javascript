@@ -1,8 +1,4 @@
 {
   "extends": "standard",
-  "parser": "babel-eslint",
-  "rules": {
-    "valid-typeof": "off"
-    // "no-unused-vars": "off"
-  }
+  "parser": "babel-eslint"
 }
