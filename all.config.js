@@ -1,38 +1,49 @@
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+// Obsolete browser notification
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ObsoleteWebpackPlugin = require('obsolete-webpack-plugin')
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
+
+// Sentry integration into webapck
+// const SentryWebpackPlugin = require('@sentry/webpack-plugin')
+
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const {
+  CleanWebpackPlugin
+} = require('clean-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
+
+const IconFontPlugin = require('icon-font-loader').Plugin
+
 const ManifestPlugin = require('webpack-manifest-plugin')
-// const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-const TerserPlugin = require('terser-webpack-plugin');
+
 const path = require('path')
-const _devMode = process.argv.includes('--DEV_MODE')
-const _prodPlugins = []
-const _devPlugins = []
-const _prodCssRules = []
+const _devMode = process.env.NODE_ENV === 'development'
+const _watchMode = process.argv.includes('--watch')
+
 const _eslint = []
-const _polyfill = []
+const _prodCssRules = []
 const _prodOptimizationMinimizer = []
+
+console.log(process.env.NODE_ENV === 'development', process.env.NODE_ENV)
+
 if (_devMode) {
   _eslint.push({
     enforce: 'pre',
     test: /\.js$/,
     exclude: [
       /node_modules/,
-      /theadmin/
+      /theadmin/,
+      /libs/
     ],
-    loader: 'eslint-loader'
+    loader: 'eslint-loader',
+    options: {
+      fix: true
+    }
   })
-  _devPlugins.push(
-  )
 }
 if (!_devMode) {
-  _polyfill.push(
-    '@babel/polyfill'
-  )
-  _prodPlugins.push(
-  )
   _prodOptimizationMinimizer.push(
     new TerserPlugin()
-    // new UglifyJsPlugin()
   )
   _prodCssRules.push({
     loader: 'postcss-loader',
@@ -42,128 +53,199 @@ if (!_devMode) {
   })
 }
 let config = {
-  context: path.resolve(__dirname, './'),
+  context: path.resolve(__dirname, ''),
   entry: {
-    default: [..._polyfill, './templates/default/js/app.js']
+    common: ['./templates/common/js/bootstrap.js', './templates/common/js/app.js']
   },
+  mode: process.env.NODE_ENV,
   output: {
-    path: path.resolve(__dirname, './public/templates'),
-    publicPath: '/templates/',
-    filename: _devMode ? '[name]/js/core.min.js' : '[name]/js/core.min.[chunkhash:7].js',
-    chunkFilename: _devMode ? 'chunkfiles/js/app.[id].js' : 'chunkfiles/js/app.[id].[chunkhash:7].js'
+    path: path.resolve(__dirname, './public/templates/'),
+    publicPath: 'public/templates/',
+    filename: _devMode ? '[name]/js/app.js' : '[name]/js/[contenthash].js',
+    chunkFilename: _devMode ? 'chunkfiles/js/[id].app.js' : 'chunkfiles/js/[id].[contenthash].js'
   },
+  devtool: _devMode ? 'inline-source-map' : '(none)',
   watchOptions: {
-    poll: true
-  },
-  mode: _devMode ? 'development' : 'production',
-  devtool: _devMode ? 'source-map' : '(none)',
-  resolve: {
-    alias: {
-      vue: _devMode ? 'vue/dist/vue.js' : 'vue/dist/vue.min.js'
-    }
+    ignored: [/node_modules/, /pages/, /vendor/]
   },
   module: {
-    rules: [
-      {
-        test: /\.(scss)$/,
-        use: [{
-          loader: _devMode ? 'style-loader' : MiniCssExtractPlugin.loader
-        }, {
-          loader: 'css-loader', // translates CSS into CommonJS modules
-          options: {
-            sourceMap: _devMode
-          }
-        },
-        ..._prodCssRules,
-        {
-          loader: 'sass-loader', // compiles Sass to CSS
-          options: {
-            data: _devMode ? '$env: development;' : '$env: production;',
-            sourceMap: _devMode
-          }
-        }]
+    rules: [{
+      test: /\.(css)$/,
+      use: [{
+        loader: _devMode && _watchMode ? 'style-loader' : MiniCssExtractPlugin.loader
+      }, {
+        loader: 'css-loader', // translates CSS into CommonJS modules
+        options: {
+          sourceMap: _devMode
+        }
+      }, {
+        loader: 'icon-font-loader'
       },
-      {
-        test: /\.(pdf)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: _devMode ? '[name].[ext]' : '[name].[ext]?[hash:7]',
-              publicPath: '/templates/common/pdf',
-              outputPath: 'common/pdf',
-              context: '/public/templates'
-            }
-          }
-        ]
+      ..._prodCssRules
+      ]
+    },
+    {
+      test: /\.(sa|sc)ss$/,
+      use: [{
+        loader: _devMode && _watchMode ? 'style-loader' : MiniCssExtractPlugin.loader
+      }, {
+        loader: 'css-loader', // translates CSS into CommonJS modules
+        options: {
+          sourceMap: _devMode
+        }
+      }, {
+        loader: 'icon-font-loader'
       },
+      ..._prodCssRules,
       {
-        test: /\.(woff|svg|woff2|eot|ttf|otf)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: _devMode ? '[name].[ext]' : '[name].[ext]?[hash:7]',
-              publicPath: '/templates/common/fonts',
-              outputPath: 'common/fonts',
-              context: '/public/templates'
-            }
+        loader: 'sass-loader', // compiles Sass to CSS
+        options: {
+          prependData: '$env: ' + process.env.NODE_ENV + ';',
+          sourceMap: _devMode,
+          implementation: require('dart-sass'),
+          sassOptions: {
+            fiber: false
           }
-        ]
-      },
-      {
-        test: /\.(png|svg|jpg|gif)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: _devMode ? '[name].[ext]' : '[name].[ext]?[hash:7]',
-              publicPath: '/templates/common/images',
-              outputPath: 'common/images',
-              context: '/public/templates'
-            }
-          }
-        ]
-      },
-      ..._eslint,
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader'
+        }
       }
+      ]
+    },
+    {
+      test: /\.(pdf)$/,
+      use: [{
+        loader: 'file-loader',
+        options: {
+          name (file) {
+            if (_devMode) {
+              if (file.split('/')[file.split('/').length - 2] === 'pdf') {
+                return '[name].[ext]'
+              }
+              return '[folder]/[name].[ext]'
+            }
+            if (file.split('/')[file.split('/').length - 2] === 'pdf') {
+              return '[name].[ext]?[hash:7]'
+            }
+            return '[folder]/[name].[ext]?[hash:7]'
+          },
+          // name: _devMode ? '[folder]/[name].[ext]' : '[folder]/[name].[ext]?[hash:7]',
+          publicPath: '/public/templates/common/pdf',
+          outputPath: 'common/pdf',
+          context: '/public/templates',
+          emitFile: true
+        }
+      }]
+    },
+    {
+      test: /\.(woff(2)?|eot|ttf|otf|)$/,
+      use: [{
+        loader: 'file-loader',
+        options: {
+          name (file) {
+            if (_devMode) {
+              if (file.split('/')[file.split('/').length - 2] === 'fonts') {
+                return '[name].[ext]'
+              }
+              return '[folder]/[name].[ext]'
+            }
+            if (file.split('/')[file.split('/').length - 2] === 'fonts') {
+              return '[name].[ext]?[hash:7]'
+            }
+            return '[folder]/[name].[ext]?[hash:7]'
+          },
+          // name: _devMode ? '[folder]/[name].[ext]' : '[folder]/[name].[ext]?[hash:7]',
+          publicPath: '/public/templates/common/fonts',
+          outputPath: 'common/fonts',
+          context: '/public/templates',
+          emitFile: true
+        }
+      }]
+    },
+    {
+      test: /\.(?:ico|gif|png|jpg|jpeg|webp|svg)$/i,
+      use: [{
+        loader: 'file-loader',
+        options: {
+          name (file) {
+            if (_devMode) {
+              if (file.split('/')[file.split('/').length - 2] === 'images') {
+                return '[name].[ext]'
+              }
+              return '[folder]/[name].[ext]'
+            }
+            if (file.split('/')[file.split('/').length - 2] === 'images') {
+              return '[name].[ext]?[hash:7]'
+            }
+            return '[folder]/[name].[ext]?[hash:7]'
+          },
+          // name: _devMode ? '[folder]/[name].[ext]' : '[folder]/[name].[ext]?[hash:7]',
+          publicPath: '/public/templates/common/images',
+          outputPath: 'common/images',
+          context: '/public/templates',
+          emitFile: true
+        }
+      }]
+    },
+    ..._eslint,
+    {
+      test: /\.js$/,
+      exclude: /node_modules/,
+      loader: 'babel-loader'
+    }
     ]
   },
   plugins: [
-    ..._prodPlugins,
-    ..._devPlugins,
-    new CleanWebpackPlugin(
-      [
-        'public/templates/admin/js',
-        'public/templates/admin/css',
-        'public/templates/default/js',
-        'public/templates/default/css',
-        'public/templates/common/fonts',
-        'public/templates/common/images',
-        'public/templates/chunkfiles'
+    // new SentryWebpackPlugin({
+    //   include: '.',
+    //   ignoreFile: '.sentrycliignore',
+    //   ignore: ['node_modules', 'all.config.js'],
+    //   configFile: 'sentry.properties'
+    // }),
+    new CleanWebpackPlugin({
+      dry: false,
+      verbose: true,
+      cleanOnceBeforeBuildPatterns: [
+        path.join(process.cwd(), 'public/templates/admin/js/**/*'),
+        path.join(process.cwd(), 'public/templates/admin/css/**/*'),
+        path.join(process.cwd(), 'public/templates/default/js/**/*'),
+        path.join(process.cwd(), 'public/templates/default/css/**/*'),
+
+        path.join(process.cwd(), 'public/templates/common/js/**/*'),
+        path.join(process.cwd(), 'public/templates/common/css/**/*'),
+        path.join(process.cwd(), 'public/templates/common/fonts/**/*'),
+        path.join(process.cwd(), 'public/templates/common/images/**/*'),
+        path.join(process.cwd(), 'public/templates/custom/**/*'),
+        path.join(process.cwd(), 'public/templates/chunkfiles/**/*')
       ],
-      {
-        root: path.resolve(__dirname, './'),
-        verbose: true,
-        allowExternal: true
-      }
-    ),
+      cleanAfterEveryBuildPatterns: [],
+      dangerouslyAllowCleanPatternsOutsideProject: true
+    }),
+    // TODO : Voir https://github.com/jeerbl/webfonts-loader
+    new IconFontPlugin({
+      fontName: 'custom-font',
+      filename: _devMode ? 'custom/fonts/[name].[ext]' : 'custom/fonts/[hash].[ext]',
+      publicPath: '/public/templates/'
+    }),
     new ManifestPlugin({
       fileName: './../manifest.json'
     }),
     new MiniCssExtractPlugin({
-      filename: _devMode ? '[name]/css/app.css' : '[name]/css/app.[chunkhash:7].css',
-      chunkFilename: _devMode ? '[name]/css/app.[id].css' : '[name]/css/app.[id].[chunkhash:7].css'
+      filename: _devMode ? '[name]/css/app.css' : '[name]/css/[contenthash].css',
+      chunkFilename: _devMode ? '[name]/css/[id].app.css' : '[name]/css/[id].[contenthash].css'
+    }),
+    new HtmlWebpackPlugin(),
+    new ObsoleteWebpackPlugin({
+      name: 'obsolete',
+      template: '<div>Your browser is not supported. <button id="obsoleteClose">&times;</button></div>'
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      async: 'obsolete'
     })
   ]
 }
 if (!_devMode) {
   config = Object.assign({
     optimization: {
+      minimize: true,
       minimizer: [
         ..._prodOptimizationMinimizer
       ]
