@@ -796,10 +796,10 @@
   dependencies:
     "@sentry/cli" "^1.47.1"
 
-"@ttskch/select2-bootstrap4-theme@^1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@ttskch/select2-bootstrap4-theme/-/select2-bootstrap4-theme-1.2.3.tgz#499d5362a4432dc2ff574adef4c4e387c0879c25"
-  integrity sha512-cVH3yrBBmkNrkqKPvHbt8dzP7NysAQfzJULxXlzkdf7NicoSUWbpjDjDGqMtUIIldDByrf2uC1HKKFRelWunQQ==
+"@ttskch/select2-bootstrap4-theme@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@ttskch/select2-bootstrap4-theme/-/select2-bootstrap4-theme-1.3.2.tgz#c9e17e34fb2cfd9f41b8efe3584165ccbdd96969"
+  integrity sha512-wm5QbtsZAJs9+IMNa9IrMJiCwJFrvutYKYRZAg6gut4/x7RBANsoSA1xQ5v9QxwhZ+kmb9Sh0BjvWm3K8glunQ==
 
 "@types/anymatch@*":
   version "1.3.1"
